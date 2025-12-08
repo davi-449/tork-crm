@@ -1,10 +1,9 @@
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { PrismaClient } from '@prisma/client';
-import DealsHeader from '@/components/crm/DealsHeader';
 import KanbanBoard from '@/components/crm/KanbanBoard';
 
 export const dynamic = 'force-dynamic';
 
-// Singleton Pattern para evitar exaustão de conexões
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
@@ -41,9 +40,21 @@ export default async function DealsPage() {
     const { deals, stages } = await getDealsAndStages();
 
     return (
-        <div className="p-6 h-[calc(100vh-64px)] overflow-hidden flex flex-col">
-            <DealsHeader />
-            <KanbanBoard initialDeals={deals} initialStages={stages} />
-        </div>
+        <ProtectedRoute>
+            <div className="p-4 md:p-6 h-[calc(100vh-2rem)] flex flex-col space-y-6">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-white tracking-wide">Pipeline de Vendas</h1>
+                        <p className="text-gray-500 mt-1 text-sm">Gerencie seus negócios e oportunidades</p>
+                    </div>
+                </div>
+
+                {/* Kanban Container */}
+                <div className="flex-1 overflow-hidden">
+                    <KanbanBoard initialDeals={deals} initialStages={stages} />
+                </div>
+            </div>
+        </ProtectedRoute>
     );
 }
