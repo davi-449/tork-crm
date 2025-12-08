@@ -127,59 +127,142 @@ body {
 
 /* ====== BUTTONS ====== */
 .btn-primary {
-  @apply py-3 px-6 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_4px_15px_rgba(0, 245, 255, 0.3)] hover:shadow-[0_6px_25px_rgba(0, 245, 255, 0.5)];
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #06b6d4;
+  color: #000;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 245, 255, 0.3);
+}
+
+.btn-primary:hover {
+  background-color: #22d3ee;
+  box-shadow: 0 6px 25px rgba(0, 245, 255, 0.5);
 }
 
 .btn-secondary {
-  @apply py-3 px-6 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-all duration-300 border border-white/10 hover:border-white/20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-ghost {
-  @apply py-2 px-4 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white rounded-lg transition-all duration-200;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #9ca3af;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 
 /* ====== INPUT FIELDS ====== */
 .input-tork {
-  @apply w-full bg-black/30 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-gray-500 focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 outline-none transition-all text-sm;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-tork::placeholder {
+  color: #6b7280;
+}
+
+.input-tork:focus {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
 }
 
 /* ====== TAGS/BADGES ====== */
 .tag {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .tag-cyan {
-  @apply bg-cyan-500/15 text-cyan-400 border border-cyan-500/20;
+  background-color: rgba(6, 182, 212, 0.15);
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.2);
 }
 
 .tag-purple {
-  @apply bg-purple-500/15 text-purple-400 border border-purple-500/20;
+  background-color: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
 .tag-green {
-  @apply bg-green-500/15 text-green-400 border border-green-500/20;
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .tag-yellow {
-  @apply bg-yellow-500/15 text-yellow-400 border border-yellow-500/20;
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.2);
 }
 
 .tag-red {
-  @apply bg-red-500/15 text-red-400 border border-red-500/20;
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* ====== MODAL BACKDROP ====== */
 .modal-backdrop {
-  @apply fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center;
-}
-
-.modal-content {
-  @apply glass-panel p-6 max-w-lg w-full mx-4 animate-in fade-in zoom-in-95 duration-200;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ====== SIDEBAR DOCK STYLE ====== */
 .sidebar-dock {
-  @apply fixed left-3 top-3 bottom-3 w-60 rounded-2xl overflow-hidden z-50;
+  position: fixed;
+  left: 0.75rem;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  width: 15rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  z-index: 50;
   background: linear-gradient(180deg, rgba(15, 21, 53, 0.95) 0%, rgba(10, 14, 39, 0.98) 100%);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -187,42 +270,66 @@ body {
 }
 
 .nav-item {
-  @apply relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
 }
 
 .nav-item-active {
-  @apply bg-cyan-500/10 text-cyan-400;
+  background-color: rgba(6, 182, 212, 0.1);
+  color: #22d3ee;
 }
 
 .nav-item-active::before {
   content: '';
-  @apply absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-cyan-400;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 1.5rem;
+  border-radius: 0 4px 4px 0;
+  background-color: #22d3ee;
   box-shadow: 0 0 12px rgba(0, 245, 255, 0.8), 0 0 24px rgba(0, 245, 255, 0.4);
-}
-
-.nav-item:not(.nav-item-active):hover {
-  @apply bg-white/5 text-white;
-}
-
-.nav-item:not(.nav-item-active):hover .nav-icon {
-  filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.5));
 }
 
 /* ====== KANBAN SPECIFIC ====== */
 .kanban-column {
-  @apply flex-shrink-0 w-80;
+  flex-shrink: 0;
+  width: 20rem;
 }
 
 .kanban-column-header {
-  @apply flex items-center gap-2 mb-4 px-2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
 }
 
 .kanban-card {
-  @apply glass-panel glass-panel-hover p-4 mb-3 cursor-grab active:cursor-grabbing;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  cursor: grab;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.kanban-card-dragging {
-  @apply opacity-50 rotate-2 scale-105;
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 245, 255, 0.1);
+  border-color: rgba(0, 245, 255, 0.15);
 }
 
 /* ====== ANIMATIONS ====== */
