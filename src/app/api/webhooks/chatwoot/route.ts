@@ -11,48 +11,70 @@ export async function POST(request: Request) {
     const text = await request.text();
     console.log("🔥 CHATWOOT WEBHOOK RECEIVED:", text);
 
-    const { name, email, phone_number } = contact;
+    try {
+        const payload = JSON.parse(text);
+        const eventType = payload.event || payload.event_type;
 
-    // Upsert logic
-    if (email || phone_number) {
-        let existing = null;
-        // Find logic
-        if (phone_number) existing = await prisma.contact.findUnique({ where: { phone: phone_number } });
-        if (!existing && email) existing = await prisma.contact.findFirst({ where: { email: email } });
+        // Robust Extraction
+        // Chatwoot webhooks vary. 
+        // Case 1: data.contact (standard)
+        // Case 2: contact (some versions)
+        // Case 3: Root level (Payload IS the contact - happens in some flat webhook configs)
+        let contact = payload.data?.contact || payload.contact || payload.data;
 
-        if (existing) {
-            await prisma.contact.update({
-                where: { id: existing.id },
-                data: {
-                    name: name || existing.name,
-                    email: email || existing.email,
-                    phone: phone_number || existing.phone
-                }
-            });
-            console.log(`✅ Contact Updated: ${name || existing.name}`);
-        } else {
-            // Verifica obrigatoriedade de telefone
-            if (!phone_number) {
-                console.log("Skipping Chatwoot contact without phone");
-            } else {
-                await prisma.contact.create({
-                    data: {
-                        name: name || 'Sem Nome',
-                        phone: phone_number,
-                        email: email,
-                        type: 'PF'
+        // Fallback: If no nested object, check if root has identifiers
+        if (!contact && (payload.email || payload.phone_number || payload.name)) {
+            contact = payload;
+        }
+
+        if (eventType === 'contact_created' || eventType === 'contact_updated') {
+            if (!contact) {
+                console.log("⚠️ No contact data found in payload.");
+                return NextResponse.json({ received: true, warning: "No contact data" });
+            }
+
+            const { name, email, phone_number } = contact;
+
+            // Upsert logic
+            if (email || phone_number) {
+                let existing = null;
+                // Find logic
+                if (phone_number) existing = await prisma.contact.findUnique({ where: { phone: phone_number } });
+                if (!existing && email) existing = await prisma.contact.findFirst({ where: { email: email } });
+
+                if (existing) {
+                    await prisma.contact.update({
+                        where: { id: existing.id },
+                        data: {
+                            name: name || existing.name,
+                            email: email || existing.email,
+                            phone: phone_number || existing.phone
+                        }
+                    });
+                    console.log(`✅ Contact Updated: ${name || existing.name}`);
+                } else {
+                    // Verifica obrigatoriedade de telefone
+                    if (!phone_number) {
+                        console.log("Skipping Chatwoot contact without phone");
+                    } else {
+                        await prisma.contact.create({
+                            data: {
+                                name: name || 'Sem Nome',
+                                phone: phone_number,
+                                email: email,
+                                type: 'PF'
+                            }
+                        });
+                        console.log(`✅ Contact Created: ${name}`);
                     }
-                });
-                console.log(`✅ Contact Created: ${name}`);
+                }
+            } else {
+                console.log("⚠️ Contact missing email and phone.");
             }
         }
-    } else {
-        console.log("⚠️ Contact missing email and phone.");
+        return NextResponse.json({ received: true });
+    } catch (error: any) {
+        console.error("❌ Webhook Error:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
-}
-return NextResponse.json({ received: true });
-    } catch (error) {
-    console.error("❌ Webhook Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-}
 }
