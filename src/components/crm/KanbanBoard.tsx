@@ -37,6 +37,7 @@ interface KanbanBoardProps {
     initialDeals: Deal[];
     initialStages?: Stage[];
     onAddDeal?: (stageId: string) => void;
+    onDealClick?: (deal: Deal) => void;
 }
 
 const getStageColor = (color: string) => {
@@ -67,13 +68,12 @@ const PIPELINES = [
     { id: 'CONSORCIO', label: 'Consórcio', icon: Wallet },
 ];
 
-export default function KanbanBoard({ initialDeals, initialStages = [], onAddDeal }: KanbanBoardProps) {
+export default function KanbanBoard({ initialDeals, initialStages = [], onAddDeal, onDealClick }: KanbanBoardProps) {
     const [deals, setDeals] = useState<Deal[]>(initialDeals);
     const [stages, setStages] = useState<Stage[]>(initialStages || []);
     const [activePipeline, setActivePipeline] = useState('ALL');
     const router = useRouter();
 
-    // Sync with server if initialDeals changes (e.g. after refresh)
     useEffect(() => {
         setDeals(initialDeals);
     }, [initialDeals]);
@@ -102,7 +102,7 @@ export default function KanbanBoard({ initialDeals, initialStages = [], onAddDea
             router.refresh();
         } catch (error) {
             console.error("Error saving move:", error);
-            setDeals(previousDeals); // Revert
+            setDeals(previousDeals);
         }
     };
 
@@ -164,7 +164,7 @@ export default function KanbanBoard({ initialDeals, initialStages = [], onAddDea
                                                 ref={provided.innerRef}
                                                 className={`flex-1 glass-panel p-3 overflow-y-auto transition-colors duration-300 rounded-xl ${snapshot.isDraggingOver
                                                         ? 'bg-cyan-500/10 border-cyan-500/30'
-                                                        : 'bg-[#151b33]/50 hover:bg-[#151b33]/80'
+                                                        : 'bg-transparent' // Transparent background per instructions
                                                     }`}
                                             >
                                                 {columnDeals.map((deal, index) => {
@@ -177,10 +177,10 @@ export default function KanbanBoard({ initialDeals, initialStages = [], onAddDea
                                                                     ref={provided.innerRef}
                                                                     {...provided.draggableProps}
                                                                     {...provided.dragHandleProps}
-                                                                    // REMOVED transform/scale from resting state to prevent DnD bugs
-                                                                    className={`mb-3 p-4 rounded-xl border transition-all duration-200 group cursor-grab active:cursor-grabbing ${snapshot.isDragging
-                                                                            ? 'bg-cyan-900/90 border-cyan-400 shadow-[0_0_30px_rgba(0,245,255,0.4)] z-50 ring-1 ring-cyan-400'
-                                                                            : 'bg-[#131730] border-white/5 hover:border-cyan-500/30 hover:shadow-lg'
+                                                                    onClick={() => onDealClick?.(deal)}
+                                                                    className={`mb-3 p-4 rounded-xl border transition-all duration-300 group cursor-grab active:cursor-grabbing ${snapshot.isDragging
+                                                                            ? 'bg-cyan-900/90 border-cyan-400 shadow-[0_0_30px_rgba(0,245,255,0.4)] z-50 scale-105'
+                                                                            : 'bg-[#131730] border-white/5 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10'
                                                                         }`}
                                                                     style={provided.draggableProps.style}
                                                                 >

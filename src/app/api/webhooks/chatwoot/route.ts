@@ -7,20 +7,30 @@ const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 export async function POST(request: Request) {
-    try {
-        const payload = await request.json();
-        console.log("Chatwoot Payload:", JSON.stringify(payload, null, 2)); // Log para debug
+    // Debug Log Verbose
+    const text = await request.text();
+    console.log("🔥 CHATWOOT WEBHOOK RECEIVED:", text);
 
-        const eventType = payload.event; // ou payload.event_type dependendo da versão
+    try {
+        const payload = JSON.parse(text);
+        const eventType = payload.event || payload.event_type;
+
+        // Robust Extraction
+        // Chatwoot webhooks vary. contact_created puts contact inside "data" or "data.contact" or just root depending on version
+        const contact = payload.data?.contact || payload.contact || payload.data;
 
         if (eventType === 'contact_created' || eventType === 'contact_updated') {
-            const contact = payload.data.contact || payload.data; // Tenta extrair de ambos os locais
+            if (!contact) {
+                console.log("⚠️ No contact data found in payload.");
+                return NextResponse.json({ received: true, warning: "No contact data" });
+            }
 
             const { name, email, phone_number } = contact;
 
             // Upsert logic
             if (email || phone_number) {
                 let existing = null;
+                // Find logic
                 if (phone_number) existing = await prisma.contact.findUnique({ where: { phone: phone_number } });
                 if (!existing && email) existing = await prisma.contact.findFirst({ where: { email: email } });
 
@@ -33,8 +43,9 @@ export async function POST(request: Request) {
                             phone: phone_number || existing.phone
                         }
                     });
+                    console.log(`✅ Contact Updated: ${name || existing.name}`);
                 } else {
-                    // Verifica obrigatoriedade de telefone se necessário, mas para webhook inbound pode ser permissivo
+                    // Verifica obrigatoriedade de telefone
                     if (!phone_number) {
                         console.log("Skipping Chatwoot contact without phone");
                     } else {
@@ -46,13 +57,16 @@ export async function POST(request: Request) {
                                 type: 'PF'
                             }
                         });
+                        console.log(`✅ Contact Created: ${name}`);
                     }
                 }
+            } else {
+                console.log("⚠️ Contact missing email and phone.");
             }
         }
         return NextResponse.json({ received: true });
     } catch (error) {
-        console.error("Webhook Error:", error);
+        console.error("❌ Webhook Error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

@@ -67,3 +67,28 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Erro interno ao processar lead', details: error.message }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+        return NextResponse.json({ error: 'ID required' }, { status: 400 });
+    }
+
+    try {
+        // Delete related deals first explicitly to ensure cleaning up
+        await prisma.deal.deleteMany({
+            where: { contactId: id }
+        });
+
+        await prisma.contact.delete({
+            where: { id }
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Delete Error:", error);
+        return NextResponse.json({ error: 'Failed to delete contact' }, { status: 500 });
+    }
+}

@@ -1,21 +1,33 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Users, Phone, MessageCircle, Calendar, Plus, Search } from 'lucide-react';
-// Importe o modal de lead se existir, ou use o de deals adaptado?
-// O usuário pediu "NewDealModal" em "deals" mas "Novo Lead" em "leads".
-// Vou usar NewDealModal também para leads, já que o modal aceita dados do cliente?
-// O NewDealModal no codigo do usuário *cria* um lead (POST /api/leads). Então é o mesmo modal.
+import { Users, Phone, MessageCircle, Calendar, Plus, Search, Trash2, Loader2 } from 'lucide-react';
+import axios from 'axios';
 import NewDealModal from '@/components/crm/NewDealModal';
 import { useRouter } from 'next/navigation';
 
 export default function LeadsContainer({ contacts }: { contacts: any[] }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isToDelete, setIsToDelete] = useState<string | null>(null);
     const router = useRouter();
 
     const handleSuccess = () => {
         setIsModalOpen(false);
         router.refresh();
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Tem certeza que deseja excluir este lead e todos os seus negócios?")) return;
+
+        try {
+            setIsToDelete(id);
+            await axios.delete(`/api/leads?id=${id}`);
+            router.refresh();
+        } catch (error) {
+            alert("Erro ao excluir. Tente novamente.");
+        } finally {
+            setIsToDelete(null);
+        }
     };
 
     return (
@@ -97,16 +109,40 @@ export default function LeadsContainer({ contacts }: { contacts: any[] }) {
                                         <span className="text-gray-600 text-xs italic">Sem negócios</span>
                                     )}
                                 </td>
-                                <td className="px-6 py-4 text-right">
+                                <td className="px-6 py-4 text-right flex justify-end">
                                     <button
                                         className="p-2.5 rounded-xl text-gray-500 hover:text-green-400 hover:bg-green-500/10 transition-all opacity-0 group-hover:opacity-100"
                                         title="Chamar no WhatsApp"
                                     >
                                         <MessageCircle size={18} />
                                     </button>
+                                    <button
+                                        onClick={() => handleDelete(contact.id)}
+                                        disabled={isToDelete === contact.id}
+                                        className="p-2.5 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100 ml-1"
+                                        title="Excluir Lead"
+                                    >
+                                        {isToDelete === contact.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                                    </button>
                                 </td>
                             </tr>
                         ))}
+                        {contacts.length === 0 && (
+                            <tr>
+                                <td colSpan={5} className="px-6 py-16 text-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+                                            <Users size={28} className="text-gray-600" />
+                                        </div>
+                                        <p className="text-gray-500 mb-4">Nenhum lead encontrado.</p>
+                                        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+                                            <Plus size={18} />
+                                            Adicionar Primeiro Lead
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
