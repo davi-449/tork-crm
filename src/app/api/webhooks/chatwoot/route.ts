@@ -40,7 +40,7 @@ export async function POST(req: Request) {
             // Refazendo a lógica manual para ser mais robusto com dados parciais
             let existing = null;
             if (phone_number) existing = await prisma.contact.findUnique({ where: { phone: phone_number } });
-            if (!existing && email) existing = await prisma.contact.findUnique({ where: { email: email } });
+            if (!existing && email) existing = await prisma.contact.findFirst({ where: { email: email } });
 
             if (existing) {
                 await prisma.contact.update({
