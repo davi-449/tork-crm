@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Users, KanbanSquare, Settings, LogOut, FileText } from 'lucide-react';
+import { LayoutDashboard, Users, KanbanSquare, Settings, LogOut, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -9,38 +9,50 @@ export default function Sidebar() {
     const { user, logout } = useAuth();
 
     return (
-        <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-[#0a0e27]/95 backdrop-blur-xl border-r border-gray-800 z-50">
-            <div className="p-6 flex items-center gap-3">
-                <div className="w-8 h-8 flex items-center justify-center">
-                    {/* Placeholder Logo or keep existing if generic */}
-                    <img src="/tork-logo.png" alt="Tork Logo" className="w-full h-full object-contain" />
+        <aside className="sidebar-dock hidden md:flex flex-col">
+            {/* Logo Header */}
+            <div className="p-5 flex items-center gap-3 border-b border-white/5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <Sparkles size={18} className="text-black" />
                 </div>
-                <span className="font-bold text-xl tracking-wider text-white">TORK <span className="text-cyan-400">CRM</span></span>
+                <div className="flex flex-col">
+                    <span className="font-bold text-lg tracking-wide text-white">TORK</span>
+                    <span className="text-[10px] text-cyan-400 font-medium tracking-widest uppercase -mt-1">CRM PRO</span>
+                </div>
             </div>
 
-            <nav className="flex-1 px-4 space-y-2 mt-4">
+            {/* Navigation */}
+            <nav className="flex-1 p-3 space-y-1 mt-2">
                 <NavItem icon={<LayoutDashboard size={20} />} label="Visão Geral" href="/" />
                 <NavItem icon={<Users size={20} />} label="Leads" href="/leads" />
                 <NavItem icon={<KanbanSquare size={20} />} label="Negócios" href="/deals" />
                 <NavItem icon={<Settings size={20} />} label="Configurações" href="/settings" />
             </nav>
 
-            <div className="p-4 border-t border-gray-800">
+            {/* User Profile */}
+            <div className="p-3 border-t border-white/5">
                 {user ? (
-                    <div className="glass-card p-3 rounded-lg flex items-center gap-3 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold uppercase">
+                    <div className="glass-panel p-3 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-sm font-bold uppercase text-cyan-400">
                             {user.name.substring(0, 2)}
                         </div>
-                        <div className="flex-1 overflow-hidden">
+                        <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium truncate text-white">{user.name}</div>
-                            <div className="text-xs text-gray-400 truncate capitalize">{user.role}</div>
+                            <div className="text-xs text-gray-500 truncate capitalize">{user.role}</div>
                         </div>
-                        <button onClick={logout} className="text-gray-400 hover:text-red-400 transition-colors">
+                        <button
+                            onClick={logout}
+                            className="p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            title="Sair"
+                        >
                             <LogOut size={16} />
                         </button>
                     </div>
                 ) : (
-                    <Link href="/login" className="flex items-center justify-center gap-2 w-full p-2 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition-all text-sm font-medium">
+                    <Link
+                        href="/login"
+                        className="btn-primary w-full text-sm"
+                    >
                         Entrar
                     </Link>
                 )}
@@ -56,17 +68,20 @@ function NavItem({ icon, label, href }: { icon: React.ReactNode, label: string, 
     return (
         <Link
             href={href}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group ${active
-                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                }`}
+            className={`nav-item group ${active ? 'nav-item-active' : ''}`}
         >
-            <span className={`${active ? 'text-cyan-400' : 'text-gray-500 group-hover:text-white'}`}>
+            <span className={`nav-icon transition-all duration-200 ${active
+                    ? 'text-cyan-400'
+                    : 'text-gray-500 group-hover:text-cyan-400'
+                }`}>
                 {icon}
             </span>
-            <span className="font-medium">{label}</span>
+            <span className={`font-medium text-sm ${active ? 'text-cyan-400' : 'text-gray-400 group-hover:text-white'
+                }`}>
+                {label}
+            </span>
             {active && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                <div className="ml-auto w-2 h-2 rounded-full bg-cyan-400 animate-pulse-glow" />
             )}
         </Link>
     );

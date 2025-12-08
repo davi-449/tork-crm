@@ -4,25 +4,25 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import {
     MoreHorizontal, Calendar, DollarSign, User,
     Car, Heart, Building, Wallet, Layers,
-    Inbox, Zap, CheckCircle2, XCircle, Briefcase, AlertCircle
+    Inbox, Zap, CheckCircle2, XCircle, Briefcase, AlertCircle, Clock
 } from 'lucide-react';
 import DealDetailModal from './DealDetailModal';
 
-// Tipos
 // Types
 type Deal = {
     id: string;
     title: string;
     value: number | null;
     stage: string;
+    priority?: string;
     insuranceType: string;
     contact: { name: string; phone?: string; email?: string };
     insuranceData: any;
-    renewalDate?: Date | string; // Adjusted to accept Date from Prisma
+    renewalDate?: Date | string;
     createdAt: Date | string;
 };
 
@@ -34,27 +34,47 @@ type Stage = {
     type: string;
 };
 
+// Priority color mapping
+const getPriorityClass = (priority?: string) => {
+    switch (priority?.toUpperCase()) {
+        case 'HIGH': return 'priority-high';
+        case 'MEDIUM': return 'priority-medium';
+        case 'LOW': return 'priority-low';
+        default: return 'priority-medium';
+    }
+};
+
 // Icon Mapping Helper
 const getStageIcon = (type: string) => {
     switch (type) {
         case 'WON': return CheckCircle2;
         case 'LOST': return XCircle;
-        default: return Briefcase; // Default icon
+        default: return Briefcase;
     }
 };
 
 const getStageStyles = (color: string) => {
     const styles: any = {
-        blue: { border: 'border-blue-500', bg: 'bg-blue-500/10', text: 'text-blue-400' },
-        yellow: { border: 'border-yellow-500', bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
-        purple: { border: 'border-purple-500', bg: 'bg-purple-500/10', text: 'text-purple-400' },
-        green: { border: 'border-green-500', bg: 'bg-green-500/10', text: 'text-green-400' },
-        red: { border: 'border-red-500', bg: 'bg-red-500/10', text: 'text-red-400' },
+        blue: { dot: 'bg-blue-500', text: 'text-blue-400', glow: 'shadow-blue-500/20' },
+        yellow: { dot: 'bg-yellow-500', text: 'text-yellow-400', glow: 'shadow-yellow-500/20' },
+        purple: { dot: 'bg-purple-500', text: 'text-purple-400', glow: 'shadow-purple-500/20' },
+        green: { dot: 'bg-green-500', text: 'text-green-400', glow: 'shadow-green-500/20' },
+        red: { dot: 'bg-red-500', text: 'text-red-400', glow: 'shadow-red-500/20' },
     };
     return styles[color] || styles.blue;
 };
 
-// ... PIPELINES constant stays the same ...
+const getInsuranceTag = (type: string) => {
+    switch (type?.toUpperCase()) {
+        case 'AUTO': return { class: 'tag-cyan', icon: Car };
+        case 'SAUDE': return { class: 'tag-red', icon: Heart };
+        case 'VIDA': return { class: 'tag-purple', icon: Heart };
+        case 'CONSORCIO': return { class: 'tag-yellow', icon: Wallet };
+        case 'EMPRESARIAL': return { class: 'tag-green', icon: Building };
+        default: return { class: 'tag-cyan', icon: Briefcase };
+    }
+};
+
 const PIPELINES = [
     { id: 'ALL', label: 'Visão Geral', icon: Layers },
     { id: 'AUTO', label: 'Automóvel', icon: Car },
@@ -68,6 +88,7 @@ export default function KanbanBoard({ initialDeals, initialStages = [] }: { init
     const [stages, setStages] = useState<Stage[]>(initialStages || []);
     const [activePipeline, setActivePipeline] = useState('ALL');
     const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+    const router = useRouter();
 
     const filteredDeals = deals.filter(deal => {
         if (activePipeline === 'ALL') return true;
@@ -75,9 +96,6 @@ export default function KanbanBoard({ initialDeals, initialStages = [] }: { init
     });
 
     const getColumnDeals = (colId: string) => filteredDeals.filter((d) => d.stage === colId);
-
-    const [isUpdating, setIsUpdating] = useState(false);
-    const router = useRouter(); // Import needed
 
     const [enabled, setEnabled] = useState(false);
 
@@ -99,7 +117,6 @@ export default function KanbanBoard({ initialDeals, initialStages = [] }: { init
         ) return;
 
         const newStage = destination.droppableId;
-        const previousStage = source.droppableId;
 
         // Optimistic Update
         const updatedDeals = deals.map((d) =>
@@ -113,21 +130,23 @@ export default function KanbanBoard({ initialDeals, initialStages = [] }: { init
             router.refresh();
         } catch (error) {
             console.error("Erro ao salvar movimento:", error);
-            // Revert on error
             setDeals(previousDeals);
             alert("Erro ao mover o card. A alteração foi revertida.");
         }
     };
 
     if (!enabled) {
-        return null;
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
     }
 
     return (
-        <div className="flex flex-col h-full font-sans">
-
-            {/* 1. Barra de Filtros (Estilo Abas Limpas) */}
-            <div className="flex gap-1 mb-6 border-b border-gray-800 pb-0 px-2 overflow-x-auto">
+        <div className="flex flex-col h-full">
+            {/* Pipeline Filter Tabs */}
+            <div className="flex gap-1 mb-6 px-1 overflow-x-auto pb-3">
                 {PIPELINES.map((pipeline) => {
                     const Icon = pipeline.icon;
                     const isActive = activePipeline === pipeline.id;
@@ -136,11 +155,11 @@ export default function KanbanBoard({ initialDeals, initialStages = [] }: { init
                             key={pipeline.id}
                             onClick={() => setActivePipeline(pipeline.id)}
                             className={`
-                flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all relative top-[1px]
-                ${isActive
-                                    ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-500/5'
-                                    : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'}
-              `}
+                                flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap
+                                ${isActive
+                                    ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
+                                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'}
+                            `}
                         >
                             <Icon size={16} />
                             {pipeline.label}
@@ -149,121 +168,128 @@ export default function KanbanBoard({ initialDeals, initialStages = [] }: { init
                 })}
             </div>
 
-            {/* 2. O Quadro Kanban */}
+            {/* Kanban Board */}
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className="flex-1 overflow-x-auto">
-                    <div className="flex gap-4 h-full min-w-[1300px] pb-4 px-2">
+                    <div className="flex gap-5 h-full min-w-max pb-4 px-1">
                         {stages.map((stage) => {
-                            const ColumnIcon = getStageIcon(stage.type);
                             const style = getStageStyles(stage.color);
+                            const columnDeals = getColumnDeals(stage.id);
+
                             return (
-                                <div
-                                    key={stage.id}
-                                    className="w-80 flex-shrink-0 flex flex-col bg-[#0f1535]/50 rounded-xl border border-gray-800/50"
-                                >
-                                    {/* Header da Coluna (Clean & Functional) */}
-                                    <div className={`p-4 flex justify-between items-center border-b border-gray-800 ${style.border}`}>
-                                        <div className="flex items-center gap-2">
-                                            <div className={`p-1.5 rounded-md ${style.bg} ${style.text}`}>
-                                                <ColumnIcon size={16} />
-                                            </div>
-                                            <h3 className="font-semibold text-gray-200 text-sm">
-                                                {stage.name}
-                                            </h3>
-                                        </div>
-                                        <span className="text-xs font-mono text-gray-500 bg-gray-900/50 px-2 py-1 rounded">
-                                            {getColumnDeals(stage.id).length}
+                                <div key={stage.id} className="kanban-column flex flex-col">
+                                    {/* Column Header - Floating Style */}
+                                    <div className="kanban-column-header">
+                                        <div className={`w-2.5 h-2.5 rounded-full ${style.dot} shadow-lg ${style.glow}`} />
+                                        <h3 className={`font-semibold text-sm ${style.text}`}>
+                                            {stage.name}
+                                        </h3>
+                                        <span className="ml-auto text-xs font-mono text-gray-600 bg-white/5 px-2 py-0.5 rounded-full">
+                                            {columnDeals.length}
                                         </span>
                                     </div>
 
-                                    {/* Área Droppable */}
+                                    {/* Droppable Area */}
                                     <Droppable droppableId={stage.id}>
                                         {(provided, snapshot) => (
                                             <div
                                                 {...provided.droppableProps}
                                                 ref={provided.innerRef}
                                                 className={`
-                          flex-1 p-3 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-800
-                          ${snapshot.isDraggingOver ? 'bg-gray-800/20' : ''}
-                        `}
+                                                    flex-1 rounded-2xl p-2 min-h-[200px] transition-all duration-200
+                                                    ${snapshot.isDraggingOver
+                                                        ? 'bg-cyan-500/5 ring-1 ring-cyan-500/20'
+                                                        : 'bg-transparent'}
+                                                `}
                                             >
                                                 <AnimatePresence mode='popLayout'>
-                                                    {getColumnDeals(stage.id).map((deal, index) => (
-                                                        <Draggable key={deal.id} draggableId={deal.id} index={index}>
-                                                            {(provided, snapshot) => (
-                                                                <div
-                                                                    ref={provided.innerRef}
-                                                                    {...provided.draggableProps}
-                                                                    {...provided.dragHandleProps}
-                                                                    className="mb-3 outline-none"
-                                                                    style={{ ...provided.draggableProps.style }} // Ensure transform is applied
-                                                                >
+                                                    {columnDeals.map((deal, index) => {
+                                                        const tagInfo = getInsuranceTag(deal.insuranceType);
+                                                        const TagIcon = tagInfo.icon;
+
+                                                        return (
+                                                            <Draggable key={deal.id} draggableId={deal.id} index={index}>
+                                                                {(provided, snapshot) => (
                                                                     <div
-                                                                        className={`
-                                      bg-[#1a2040] border border-gray-700 rounded-lg p-3 shadow-sm group cursor-grab active:cursor-grabbing
-                                      hover:border-gray-500 hover:shadow-md transition-all duration-200
-                                      ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-cyan-500 rotate-2 z-50 bg-[#1f294f]' : ''}
-                                    `}
-                                                                        onClick={() => setSelectedDeal(deal)}
+                                                                        ref={provided.innerRef}
+                                                                        {...provided.draggableProps}
+                                                                        {...provided.dragHandleProps}
+                                                                        className="mb-3 outline-none"
+                                                                        style={{ ...provided.draggableProps.style }}
                                                                     >
-                                                                        {/* Badges e Tags */}
-                                                                        <div className="flex justify-between items-start mb-2">
-                                                                            <span className={`
-                                        text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded
-                                        ${deal.insuranceType === 'AUTO' ? 'bg-blue-900/30 text-blue-300' :
-                                                                                    deal.insuranceType === 'SAUDE' ? 'bg-pink-900/30 text-pink-300' :
-                                                                                        deal.insuranceType === 'CONSORCIO' ? 'bg-purple-900/30 text-purple-300' :
-                                                                                            'bg-gray-800 text-gray-400'}
-                                      `}>
-                                                                                {deal.insuranceType}
-                                                                            </span>
-
-                                                                            <button className="text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-700 rounded">
-                                                                                <MoreHorizontal size={14} />
-                                                                            </button>
-                                                                        </div>
-
-                                                                        {/* Conteúdo Principal */}
-                                                                        <h4 className="font-medium text-gray-200 text-sm mb-3 leading-snug">
-                                                                            {deal.title}
-                                                                        </h4>
-
-                                                                        {/* Alerta de Renovação */}
-                                                                        {deal.renewalDate && (
-                                                                            <div className={`
-                                                                        mt-2 mb-2 px-2 py-1 rounded text-[10px] font-bold uppercase flex items-center gap-1 w-fit
-                                                                        ${new Date(deal.renewalDate) < new Date() ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'}
-                                                                      `}>
-                                                                                <AlertCircle size={10} />
-                                                                                Renova: {new Date(deal.renewalDate).toLocaleDateString('pt-BR')}
-                                                                            </div>
-                                                                        )}
-
-                                                                        {/* Footer */}
-                                                                        <div className="flex items-center justify-between text-xs pt-3 border-t border-gray-700/50">
-                                                                            <div className="flex items-center gap-1.5 text-gray-400">
-                                                                                <div className="w-5 h-5 rounded-full bg-gray-700 flex items-center justify-center text-[9px] font-bold text-gray-300">
-                                                                                    {deal.contact.name.substring(0, 2).toUpperCase()}
-                                                                                </div>
-                                                                                <span className="truncate max-w-[80px]">
-                                                                                    {deal.contact.name.split(' ')[0]}
+                                                                        <div
+                                                                            className={`
+                                                                                kanban-card ${getPriorityClass(deal.priority)} group
+                                                                                ${snapshot.isDragging
+                                                                                    ? 'rotate-2 scale-105 shadow-2xl shadow-cyan-500/20 ring-2 ring-cyan-500/50'
+                                                                                    : ''}
+                                                                            `}
+                                                                            onClick={() => setSelectedDeal(deal)}
+                                                                        >
+                                                                            {/* Header: Tag + Actions */}
+                                                                            <div className="flex justify-between items-start mb-3">
+                                                                                <span className={`tag ${tagInfo.class}`}>
+                                                                                    <TagIcon size={10} className="mr-1" />
+                                                                                    {deal.insuranceType}
                                                                                 </span>
+                                                                                <button className="p-1 rounded-lg text-gray-600 hover:text-white hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all">
+                                                                                    <MoreHorizontal size={14} />
+                                                                                </button>
                                                                             </div>
 
-                                                                            {deal.value && (
-                                                                                <div className="flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-900/10 px-1.5 py-0.5 rounded">
-                                                                                    <span>R$</span>
-                                                                                    {deal.value.toLocaleString('pt-BR', { notation: 'compact' })}
+                                                                            {/* Title */}
+                                                                            <h4 className="font-medium text-white text-sm mb-3 leading-relaxed line-clamp-2">
+                                                                                {deal.title}
+                                                                            </h4>
+
+                                                                            {/* Renewal Alert */}
+                                                                            {deal.renewalDate && (
+                                                                                <div className={`
+                                                                                    mb-3 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase 
+                                                                                    flex items-center gap-1.5 w-fit
+                                                                                    ${new Date(deal.renewalDate) < new Date()
+                                                                                        ? 'bg-red-500/15 text-red-400 border border-red-500/20'
+                                                                                        : 'bg-orange-500/10 text-orange-400 border border-orange-500/15'}
+                                                                                `}>
+                                                                                    <Clock size={10} />
+                                                                                    Renova: {new Date(deal.renewalDate).toLocaleDateString('pt-BR')}
                                                                                 </div>
                                                                             )}
+
+                                                                            {/* Footer: Contact + Value */}
+                                                                            <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-[9px] font-bold text-cyan-400">
+                                                                                        {deal.contact.name.substring(0, 2).toUpperCase()}
+                                                                                    </div>
+                                                                                    <span className="text-xs text-gray-500 truncate max-w-[80px]">
+                                                                                        {deal.contact.name.split(' ')[0]}
+                                                                                    </span>
+                                                                                </div>
+
+                                                                                {deal.value && (
+                                                                                    <div className="flex items-center gap-1 text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
+                                                                                        <DollarSign size={10} />
+                                                                                        {deal.value.toLocaleString('pt-BR', { notation: 'compact' })}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                            )}
-                                                        </Draggable>
-                                                    ))}
+                                                                )}
+                                                            </Draggable>
+                                                        );
+                                                    })}
                                                 </AnimatePresence>
                                                 {provided.placeholder}
+
+                                                {/* Empty State */}
+                                                {columnDeals.length === 0 && !snapshot.isDraggingOver && (
+                                                    <div className="flex flex-col items-center justify-center py-8 text-gray-600">
+                                                        <Inbox size={24} className="mb-2 opacity-50" />
+                                                        <span className="text-xs">Arraste cards aqui</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </Droppable>
