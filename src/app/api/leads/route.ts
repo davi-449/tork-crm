@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { createChatwootContact } from '@/lib/chatwoot';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const prisma = globalForPrisma.prisma || new PrismaClient();
@@ -49,6 +50,10 @@ export async function POST(req: Request) {
 
             return { contact, deal };
         });
+
+        // Integração Chatwoot (Outbound Sync) - Fire and Forget
+        // Não esperamos o await para não travar a resposta do webhook do lead
+        createChatwootContact(nome, email, telefone).catch(err => console.error("Falha background Chatwoot Sync:", err));
 
         return NextResponse.json({
             success: true,
