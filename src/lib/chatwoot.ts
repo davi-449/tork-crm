@@ -24,7 +24,14 @@ export const createChatwootContact = async (name: string, email?: string, phone?
 
         const payload: any = { name };
         if (email) payload.email = email;
-        if (phone) payload.phone_number = phone;
+        if (phone) {
+            // E.164 Format Enforcement (+55...)
+            let formattedPhone = phone.replace(/\D/g, ''); // Remove non-digits
+            if (!formattedPhone.startsWith('+')) {
+                formattedPhone = `+${formattedPhone}`;
+            }
+            payload.phone_number = formattedPhone;
+        }
 
         // Search Contact First
         let existingId = null;
