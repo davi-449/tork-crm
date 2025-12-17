@@ -90,3 +90,53 @@ export const getChatwootContacts = async (page = 1) => {
         return [];
     }
 };
+
+// SSO: Authenticate user via Chatwoot (simulate login to get cookie)
+export const signInWithChatwoot = async (email: string, password: string) => {
+    try {
+        console.log(`[SSO] Authenticating with Chatwoot: ${email}`);
+        const response = await axios.post(`${CHATWOOT_API_URL}/auth/sign_in`, {
+            email,
+            password
+        });
+
+        // Return user data AND cookie headers
+        return {
+            user: response.data.data,
+            headers: response.headers
+        };
+    } catch (error: any) {
+        console.error('[SSO] Chatwoot auth failed:', error.response?.status);
+        return null;
+    }
+};
+
+// SSO: Create user in Chatwoot via Account Agents API (Strict implementation)
+export const createChatwootUser = async (user: { name: string; email: string; password: string; role?: 'agent' | 'administrator' }) => {
+    const adminToken = process.env.CHATWOOT_ADMIN_TOKEN;
+    if (!adminToken) {
+        console.error('[SSO] CHATWOOT_ADMIN_TOKEN missing');
+        return null;
+    }
+
+    try {
+        console.log(`[SSO] Creating/Inviting Agent in Account ${CHATWOOT_ACCOUNT_ID}: ${user.email}`);
+
+        // POST /api/v1/accounts/{account_id}/agents
+        const response = await api.post('/agents', {
+            name: user.name,
+            email: user.email,
+            role: user.role || 'agent',
+            password: user.password,
+            password_confirmation: user.password
+        }, {
+            headers: { 'api_access_token': adminToken }
+        });
+
+        console.log(`[SSO] Agent Created: ${response.data.id || response.data.email}`);
+        return response.data;
+    } catch (error: any) {
+        console.error('[SSO] Create agent failed:', error.response?.data || error.message);
+        throw error;
+    }
+};

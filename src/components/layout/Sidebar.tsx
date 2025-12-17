@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Users, KanbanSquare, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, KanbanSquare, Settings, LogOut, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -29,6 +29,7 @@ export default function Sidebar() {
                     <NavItem icon={<LayoutDashboard size={20} />} label="Visão Geral" href="/" />
                     <NavItem icon={<Users size={20} />} label="Leads" href="/leads" />
                     <NavItem icon={<KanbanSquare size={20} />} label="Negócios" href="/deals" />
+                    <NavItemExternal icon={<MessageSquare size={20} />} label="Atendimento" href="https://chat.davicode.me" />
                     <NavItem icon={<Settings size={20} />} label="Configurações" href="/settings" />
                 </nav>
 
@@ -83,5 +84,21 @@ function NavItem({ icon, label, href }: { icon: React.ReactNode, label: string, 
             </span>
             <span className="relative z-10 font-medium tracking-wide">{label}</span>
         </Link>
+    );
+}
+
+function NavItemExternal({ icon, label, href }: { icon: React.ReactNode, label: string, href: string }) {
+    return (
+        <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden text-gray-400 hover:text-white hover:bg-white/5`}
+        >
+            <span className={`relative z-10 transition-transform duration-300 group-hover:scale-110`}>
+                {icon}
+            </span>
+            <span className="relative z-10 font-medium tracking-wide">{label}</span>
+        </a>
     );
 }

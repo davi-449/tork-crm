@@ -2,101 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Tork Identity Colors */
-  --bg-core: #020410;
-  --bg-gradient-center: #0f1535;
-
-  --accent-primary: #00f5ff;
-  /* Cyan Neon */
-  --accent-glow: rgba(0, 245, 255, 0.4);
-
-  /* Glass System */
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-surface: rgba(20, 25, 45, 0.4);
-  --glass-highlight: rgba(255, 255, 255, 0.03);
+/* Tailwind Animation Delays */
+.animation-delay-2000 {
+  animation-delay: 2s;
 }
 
-body {
-  color: #ffffff;
-  background-color: var(--bg-core);
-  background-image: radial-gradient(circle at 50% 0%, var(--bg-gradient-center) 0%, var(--bg-core) 80%);
-  background-attachment: fixed;
-  min-height: 100vh;
+.animation-delay-4000 {
+  animation-delay: 4s;
 }
 
-/* Utilitário: Painel de Vidro Moderno */
-.glass-panel {
-  background: linear-gradient(145deg, var(--glass-surface) 0%, rgba(10, 12, 25, 0.6) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2), inset 0 1px 0 var(--glass-highlight);
-  border-radius: 1.25rem;
-  /* 20px */
-}
-
-/* Scrollbar Neon */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 245, 255, 0.1);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
-  box-shadow: 0 0 10px var(--accent-primary);
-}
-
-/* Inputs Tork Style */
-.input-tork {
-  width: 100%;
-  background-color: rgba(5, 7, 20, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  padding: 0.625rem 1rem;
-  color: #ffffff;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-.input-tork::placeholder {
-  color: #4b5563;
-}
-
-.input-tork:focus {
-  border-color: #22d3ee;
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
-}
-
-/* Buttons Neon */
-.btn-primary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  background-color: #06b6d4;
-  color: #000000;
-  font-weight: 700;
-  border-radius: 0.75rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
-}
-
-.btn-primary:hover {
-  background-color: #22d3ee;
-  box-shadow: 0 0 25px rgba(0, 245, 255, 0.4);
-}
-
-.btn-primary:active {
-  transform: scale(0.95);
+/* Perspective for 3D transforms */
+.perspective-1000 {
+  perspective: 1000px;
 }

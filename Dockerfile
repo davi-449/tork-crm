@@ -7,7 +7,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y openssl
 COPY package.json package-lock.json* ./
 # Instala dependências (incluindo dev para o build)
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # 3. Builder
 FROM base AS builder
