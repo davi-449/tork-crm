@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* Tailwind Animation Delays */
 .animation-delay-2000 {
   animation-delay: 2s;
@@ -11,7 +17,7 @@
   animation-delay: 4s;
 }
 
-/* Perspective for 3D transforms */
+/* Custom Utilities */
 .perspective-1000 {
   perspective: 1000px;
 }

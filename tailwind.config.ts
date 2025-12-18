@@ -29,11 +29,6 @@ const config: Config = {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
                 'cyber-grid': 'linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px)',
             },
-            animation: {
-                'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                'blob': 'blob 7s infinite',
-                'gradient-x': 'gradient-x 3s ease infinite',
-            },
             keyframes: {
                 blob: {
                     '0%': { transform: 'translate(0px, 0px) scale(1)' },
@@ -51,6 +46,16 @@ const config: Config = {
                         'background-position': 'right center'
                     },
                 },
+                shimmer: {
+                    from: { transform: 'translateX(-100%)' },
+                    to: { transform: 'translateX(100%)' },
+                },
+            },
+            animation: {
+                'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'blob': 'blob 7s infinite',
+                'gradient-x': 'gradient-x 3s ease infinite',
+                'shimmer': 'shimmer 2s infinite',
             },
         },
     },

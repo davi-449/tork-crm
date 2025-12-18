@@ -42,6 +42,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Garante que dependências do seed (bcryptjs, etc) estejam disponíveis
+COPY --from=builder /app/node_modules ./node_modules
+
 # Copia o diretório prisma para rodar migrations e seed e schema
 COPY --from=builder /app/prisma ./prisma
 
