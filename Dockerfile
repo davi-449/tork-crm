@@ -15,8 +15,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Gera o Prisma Client
-RUN npx prisma generate
+# Gera o Prisma Client (REMOVIDO)
+# RUN npx prisma generate
 # Build do Next.js
 RUN npm run build
 
@@ -25,8 +25,7 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV production
 
-# Instala OpenSSL para Prisma
-# Instala OpenSSL para Prisma
+# Instala OpenSSL para Prisma (Mantido por segurança/compatibilidade)
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Cria usuário não-root por segurança
@@ -45,8 +44,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Garante que dependências do seed (bcryptjs, etc) estejam disponíveis
 COPY --from=builder /app/node_modules ./node_modules
 
-# Copia o diretório prisma para rodar migrations e seed e schema
-COPY --from=builder /app/prisma ./prisma
+# Copia o diretório prisma para rodar migrations e seed e schema (REMOVIDO)
+# COPY --from=builder /app/prisma ./prisma
 
 USER nextjs
 

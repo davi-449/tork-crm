@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-    Zap, Shield, Server, ArrowRight, PlayCircle, Globe, Lock, CheckCircle
+    Zap, Shield, Server, ArrowRight, PlayCircle, CheckCircle
 } from "lucide-react";
 
 // IMPORTS DOS SEUS COMPONENTES (Ajuste os caminhos se necessário)
@@ -11,6 +11,8 @@ import { SmartNavbar } from "@/components/landing/SmartNavbar";
 import { MegaFooter } from "@/components/landing/MegaFooter";
 import { SectionDivider } from "@/components/landing/SectionDivider";
 import { HeroMockups } from "@/components/landing/HeroMockups";
+import { StickyScrollSection } from "@/components/landing/StickyScrollSection";
+import { InfrastructureScrollSection } from "@/components/landing/InfrastructureSection";
 // Caso não tenha HeroMockups, use um placeholder ou imagem
 
 // --- UTILS: FADE IN COMPONENT ---
@@ -28,34 +30,8 @@ function FadeInWhenVisible({ children, delay = 0 }: { children: React.ReactNode;
 }
 
 export default function Home() {
-    // LÓGICA DA SEÇÃO DE INFRAESTRUTURA (Scroll Spy)
-    const infraRef = useRef<HTMLDivElement>(null);
-    const [activeFeature, setActiveFeature] = useState(0);
-    const { scrollYProgress } = useScroll({
-        target: infraRef,
-        offset: ["start start", "end end"],
-    });
-
-    // Listener simples para trocar o activeFeature baseado no scroll da seção
-    useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 2]);
-
-    // Hook para detectar qual passo está ativo na infra (Fallback manual se transform n funcionar direto)
-    useEffect(() => {
-        const handleScroll = () => {
-            if (!infraRef.current) return;
-            const rect = infraRef.current.getBoundingClientRect();
-            const progress = Math.abs(rect.top) / rect.height;
-            if (progress < 0.33) setActiveFeature(0);
-            else if (progress < 0.66) setActiveFeature(1);
-            else setActiveFeature(2);
-        };
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-
     return (
-        <main className="flex flex-col min-h-screen w-full overflow-x-hidden bg-slate-950 selection:bg-cyan-500/30 selection:text-cyan-200">
+        <main className="flex flex-col min-h-screen w-full bg-slate-950 selection:bg-cyan-500/30 selection:text-cyan-200">
 
             {/* 1. HEADER (Unificado e Apple Glass) */}
             <SmartNavbar />
@@ -124,8 +100,13 @@ export default function Home() {
             {/* 3. DIVIDER (Dark Glow) */}
             <SectionDivider variant="dark-glow" />
 
-            {/* 4. ENGINE SECTION (The Sticky Backdrop) */}
-            {/* Esta seção fica presa (sticky) no fundo enquanto a próxima sobe */}
+            {/* 4. STICKY SCROLL SECTION (WhatsApp Simulation - Moved UP) */}
+            <div className="relative z-10 bg-zinc-50">
+                <StickyScrollSection />
+            </div>
+
+            {/* 5. ENGINE SECTION (The Sticky Backdrop - "Automação Invisível") */}
+            {/* Sticky z-0 to allow next section (curtain) to slide over */}
             <section className="relative lg:sticky lg:top-0 lg:z-0 min-h-screen bg-slate-950 py-24 flex items-center">
                 <div className="max-w-7xl mx-auto px-6 w-full">
                     <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
@@ -193,117 +174,13 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* 5. INFRASTRUCTURE SECTION (The Curtain Reveal) */}
-            {/* Z-Index 10 e sombra para cobrir a seção anterior */}
-            <section
-                ref={infraRef}
-                className="relative z-10 bg-zinc-50 py-32 shadow-[0_-50px_100px_-20px_rgba(0,0,0,0.5)] min-h-[200vh]"
-            >
-                <div className="sticky top-0 hidden lg:block h-4 w-full bg-gradient-to-b from-black/5 to-transparent z-20 pointer-events-none" />
+            {/* 6. INFRASTRUCTURE SECTION (The Curtain Reveal) */}
+            {/* Relative z-10 scans over sticky z-0 */}
+            <div className="relative z-10 bg-zinc-50 shadow-[0_-50px_100px_-20px_rgba(0,0,0,0.5)]">
+                <InfrastructureScrollSection />
+            </div>
 
-                <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row">
-
-                    {/* ESQUERDA: VISUALIZADOR FIXO (STICKY) */}
-                    <div className="hidden lg:flex w-1/2 sticky top-0 h-screen items-center justify-center">
-                        <div className="w-full max-w-md aspect-square bg-white rounded-3xl shadow-2xl border border-zinc-100 p-8 relative overflow-hidden ring-1 ring-zinc-900/5 transition-all duration-500">
-
-                            {/* Grid de Fundo */}
-                            <div className="absolute inset-0 grid grid-cols-8 gap-4 p-8 opacity-[0.03]">
-                                {Array.from({ length: 64 }).map((_, i) => (
-                                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-black" />
-                                ))}
-                            </div>
-
-                            {/* Camadas Animadas */}
-                            <div className="relative z-10 h-full flex flex-col items-center justify-center">
-                                {activeFeature === 0 && (
-                                    <motion.div key="lat" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-                                        <div className="relative">
-                                            <div className="absolute inset-0 bg-cyan-400 blur-2xl opacity-20 animate-pulse" />
-                                            <Globe size={80} className="text-cyan-500 relative z-10" strokeWidth={1} />
-                                        </div>
-                                        <p className="text-center mt-6 font-bold text-cyan-700 text-lg">São Paulo, BR (South-1)</p>
-                                    </motion.div>
-                                )}
-                                {activeFeature === 1 && (
-                                    <motion.div key="sec" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                                        <Shield size={80} className="text-emerald-500 mx-auto" strokeWidth={1} />
-                                        <div className="mt-6 px-6 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold border border-emerald-200 shadow-sm">
-                                            AES-256 Encrypted
-                                        </div>
-                                    </motion.div>
-                                )}
-                                {activeFeature === 2 && (
-                                    <motion.div key="up" initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-6 bg-zinc-50 rounded-2xl border border-zinc-200 text-center">
-                                                <div className="text-3xl font-bold text-slate-900">99.99%</div>
-                                                <div className="text-xs text-zinc-500 uppercase mt-1 font-semibold">Uptime</div>
-                                            </div>
-                                            <div className="p-6 bg-zinc-50 rounded-2xl border border-zinc-200 text-center">
-                                                <div className="text-3xl font-bold text-slate-900">50ms</div>
-                                                <div className="text-xs text-zinc-500 uppercase mt-1 font-semibold">Latency</div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* DIREITA: TEXTO SCROLLÁVEL */}
-                    <div className="w-full lg:w-1/2 lg:pl-24">
-
-                        {/* Bloco 1: Latência */}
-                        <div className="h-screen flex flex-col justify-center pointer-events-none"> {/* pointer-events-none para não atrapalhar scroll */}
-                            <div className="pointer-events-auto">
-                                <div className="w-12 h-12 bg-cyan-100 rounded-2xl flex items-center justify-center mb-6 text-cyan-600">
-                                    <Zap size={24} />
-                                </div>
-                                <h3 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
-                                    Latência Zero. <br />
-                                    <span className="text-zinc-400">Servidores no Brasil.</span>
-                                </h3>
-                                <p className="text-xl text-zinc-500 leading-relaxed max-w-md">
-                                    Esqueça o delay. Nossa infraestrutura roda em São Paulo, garantindo que suas mensagens cheguem instantaneamente.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Bloco 2: Segurança */}
-                        <div className="h-screen flex flex-col justify-center pointer-events-none">
-                            <div className="pointer-events-auto">
-                                <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 text-emerald-600">
-                                    <Lock size={24} />
-                                </div>
-                                <h3 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
-                                    Blindagem Militar. <br />
-                                    <span className="text-zinc-400">Seus dados são seus.</span>
-                                </h3>
-                                <p className="text-xl text-zinc-500 leading-relaxed max-w-md">
-                                    Criptografia de ponta a ponta e conformidade total com a LGPD. Nem nós temos acesso às suas conversas.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Bloco 3: Redundância */}
-                        <div className="h-screen flex flex-col justify-center pointer-events-none">
-                            <div className="pointer-events-auto">
-                                <div className="w-12 h-12 bg-violet-100 rounded-2xl flex items-center justify-center mb-6 text-violet-600">
-                                    <Server size={24} />
-                                </div>
-                                <h3 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
-                                    Sempre Online. <br />
-                                    <span className="text-zinc-400">Redundância tripla.</span>
-                                </h3>
-                                <p className="text-xl text-zinc-500 leading-relaxed max-w-md">
-                                    Arquitetura distribuída que garante disponibilidade mesmo em picos de tráfego. Seu negócio nunca para.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            {/* 6. CTA (Event Horizon - Dark Mode Return) */}
 
             {/* 6. CTA (Event Horizon - Dark Mode Return) */}
             <SectionDivider variant="light-to-dark" className="relative z-20" />

@@ -87,20 +87,9 @@ export function SmartNavbar() {
 
                         {/* Direita */}
                         <div className="flex items-center justify-end gap-3">
-                            <AnimatePresence>
-                                {!scrolled && (
-                                    <motion.a
-                                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                        href="/login"
-                                        className="text-sm font-medium text-white hover:text-cyan-400 transition-colors mr-2"
-                                    >
-                                        Login
-                                    </motion.a>
-                                )}
-                            </AnimatePresence>
                             <motion.a
                                 layout="position"
-                                href="#signup"
+                                href="#"
                                 className={`flex items-center justify-center text-sm font-bold rounded-full transition-all whitespace-nowrap
                     ${scrolled ? "bg-white text-slate-950 px-6 py-2.5 hover:bg-zinc-200" : "bg-white/10 text-white px-7 py-3 hover:bg-white/20 border border-white/10"}`}
                             >
@@ -153,8 +142,8 @@ export function SmartNavbar() {
                                 </a>
                             ))}
                             <hr className="border-white/10 my-8 w-1/2 mx-auto" />
-                            <a href="/login" className="text-xl text-zinc-400 font-medium">Login</a>
-                            <a href="#signup" onClick={() => setMobileMenuOpen(false)} className="w-full py-4 bg-white text-slate-950 rounded-2xl font-bold text-xl mt-4 shadow-xl shadow-cyan-500/10">
+                            {/* <a href="/login" className="text-xl text-zinc-400 font-medium">Login</a> */}
+                            <a href="#" onClick={() => setMobileMenuOpen(false)} className="w-full py-4 bg-white text-slate-950 rounded-2xl font-bold text-xl mt-4 shadow-xl shadow-cyan-500/10">
                                 Começar Agora
                             </a>
                         </div>

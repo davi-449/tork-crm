@@ -18,34 +18,21 @@ services:
       - CHATWOOT_ADMIN_TOKEN=${CHATWOOT_ADMIN_TOKEN}
       - NEXTAUTH_SECRET=changeme_torkom_secret_12345
       - NEXTAUTH_URL=${NEXT_PUBLIC_API_URL:-https://crm.davicode.me}
-    depends_on:
-      tork_crm_db:
-        condition: service_healthy
+      - NODE_ENV=production
+      # - DATABASE_URL=postgresql://tork_user:tork_password@tork_crm_db:5432/tork_db?schema=public
+      - NEXTAUTH_SECRET=changeme123
+      - NEXTAUTH_URL=http://localhost:4000
+
+      # Chatwoot Integration (Optional/Legacy for Landing Page)
+      - CHATWOOT_ACCESS_TOKEN=placeholder
+      - CHATWOOT_ADMIN_TOKEN=placeholder
+      - CHATWOOT_ACCOUNT_ID=1
+      - CHATWOOT_BASE_URL=https://chat.tork.com
+
     networks:
       - tork_network
       - app_network
       - bot_default
-
-  tork_crm_db:
-    container_name: tork_crm_db
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-tork_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tork_pass}
-      POSTGRES_DB: ${POSTGRES_DB:-tork_crm}
-    volumes:
-      - tork_pg_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U tork_user -d tork_crm" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - tork_network
-      - app_network
 
 networks:
   tork_network:
@@ -54,6 +41,3 @@ networks:
     external: true
   bot_default:
     external: true
-
-volumes:
-  tork_pg_data:
