@@ -15,8 +15,18 @@ interface DashboardMetric {
 }
 
 export default function DashboardPage() {
-    // SWR Data Fetching
-    const { data: leads, error: leadsError, isLoading: leadsLoading } = useSWR('crm-leads', fetchLeads, { refreshInterval: 5000 });
+    // SWR Data Fetching with Error Handling
+    const { data: leads, error: leadsError, isLoading: leadsLoading } = useSWR('crm-leads', fetchLeads, {
+        refreshInterval: 5000,
+        onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+            // Never retry on 401 or 403
+            if (error.message.includes('Unauthorized') || error.message.includes('No authentication token')) return;
+            // Limit retries
+            if (retryCount >= 3) return;
+            // Retry after 5 seconds
+            setTimeout(() => revalidate({ retryCount }), 5000)
+        }
+    });
 
     // Metrics Calculation
     const metrics = useMemo<DashboardMetric[]>(() => {
